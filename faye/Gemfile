@@ -1,0 +1,6 @@
+# -*- coding: utf-8 -*-
+source 'http://rubygems.org'
+
+gem 'oj'
+gem 'thin'
+gem 'faye'

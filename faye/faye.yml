@@ -1,0 +1,16 @@
+---
+chdir: ./
+environment: development
+address: 0.0.0.0
+servers: 1
+port: 9300
+timeout: 60
+log: log/faye.log
+pid: tmp/faye.pid
+max_conns: 10000
+max_persistent_conns: 10000
+require: []
+rackup: ./faye.ru
+
+wait: 30
+daemonize: false
