@@ -8,7 +8,7 @@ package {
 	import ui.CoreButton;
 	import ui.TextInputForm;
 
-	[SWF(frameRate = "30", width = "1280", height = "560", backgroundColor = "0xFAFAD2", backgroundAlpha = "0")]
+	[SWF(frameRate = "30", width = "960", height = "540", backgroundColor = "0xFAFAD2")]
 
 	public class AsFayeClient extends Sprite {
 
@@ -27,8 +27,8 @@ package {
 
 		public function AsFayeClient() {
 			_stats = new Stats();
-			_stats.x = 650;
-			_stats.y = 330;
+			_stats.x = 0;
+			_stats.y = 0;
 			addChild(_stats);
 
 			_messageField = new TextField;
@@ -36,23 +36,23 @@ package {
 			_messageField.background = true;
 			_messageField.backgroundColor = 0xFFFFFF;
 			_messageField.text = "";
-			_messageField.x = 0;
-			_messageField.y = 5;
-			_messageField.width = 300;
-			_messageField.height = 400;
+			_messageField.x = 300;
+			_messageField.y = 3;
+			_messageField.width = 600;
+			_messageField.height = 530;
 			addChild(_messageField);
 
 
 			var hostLabel:TextField = new TextField;
 			hostLabel.text = 'Host:';
-			hostLabel.x = 300;
-			hostLabel.y = 20;
+			hostLabel.x = 80;
+			hostLabel.y = 80;
 			addChild(hostLabel);
 
 			var hostForm:TextInputForm = new TextInputForm;
 			hostForm.text = 'http://localhost:9300/faye';
-			hostForm.x = 350;
-			hostForm.y = 20;
+			hostForm.x = 110;
+			hostForm.y = 80;
 			addChild(hostForm);
 
 			_connectButton = new CoreButton("Connect", function():void {
@@ -61,10 +61,9 @@ package {
 					appendText('->ConnectButton : Connected');
 				});
 			});
-			_connectButton.x = 300;
-			_connectButton.y = 50;
+			_connectButton.x = 20;
+			_connectButton.y = 110;
 			addChild(_connectButton);
-
 
 			_disconnectButton = new CoreButton("Disconnect", function():void {
 				if (!_faye) {
@@ -74,20 +73,19 @@ package {
 					appendText('->DisconnectButton : Disconnected.');
 				}
 			});
-			_disconnectButton.x = 300;
-			_disconnectButton.y = 100;
+			_disconnectButton.x = 100;
+			_disconnectButton.y = 110;
 			addChild(_disconnectButton);
-
 
 
 			var chLabel:TextField = new TextField;
 			chLabel.text = 'Channel:';
-			chLabel.x = 400;
+			chLabel.x = 85;
 			chLabel.y = 150;
 			addChild(chLabel);
 			var chForm:TextInputForm = new TextInputForm;
 			chForm.text = '/test';
-			chForm.x = 450;
+			chForm.x = 135;
 			chForm.y = 150;
 			addChild(chForm);
 
@@ -107,18 +105,18 @@ package {
 				});
 				appendText('->SubscribeButton Subcribed: ' + chForm.text);
 			});
-			_subscribeButton.x = 300;
+			_subscribeButton.x = 20;
 			_subscribeButton.y = 150;
 			addChild(_subscribeButton);
 
 			var unSubChLabel:TextField = new TextField;
 			unSubChLabel.text = 'Channel:';
-			unSubChLabel.x = 400;
+			unSubChLabel.x = 85;
 			unSubChLabel.y = 200;
 			addChild(unSubChLabel);
 			var unSubChForm:TextInputForm = new TextInputForm;
 			unSubChForm.text = '/test';
-			unSubChForm.x = 450;
+			unSubChForm.x = 135;
 			unSubChForm.y = 200;
 			addChild(unSubChForm);
 			_unsubscribeButton = new CoreButton("Unsubscribe", function():void {
@@ -129,34 +127,35 @@ package {
 					appendText('->UnsubscribeButton : unsubscribed.');
 				});
 			});
-			_unsubscribeButton.x = 300;
+			_unsubscribeButton.x = 5;
 			_unsubscribeButton.y = 200;
 			addChild(_unsubscribeButton);
 
 			var publishChLabel:TextField = new TextField;
 			publishChLabel.text = 'Channel:';
-			publishChLabel.x = 400;
+			publishChLabel.x = 85;
 			publishChLabel.y = 250;
 			addChild(publishChLabel);
 			var publishChFrom:TextInputForm = new TextInputForm;
 			publishChFrom.text = '/test';
-			publishChFrom.x = 450;
+			publishChFrom.x = 135;
 			publishChFrom.y = 250;
 			addChild(publishChFrom);
 
 			var publishMessageLabel:TextField = new TextField;
 			publishMessageLabel.text = '{message: ';
-			publishMessageLabel.x = 390;
+			publishMessageLabel.x = 5;
 			publishMessageLabel.y = 280;
 			addChild(publishMessageLabel);
 			var publishMessageForm:TextInputForm = new TextInputForm;
 			publishMessageForm.text = 'hello faye!';
-			publishMessageForm.x = 450;
+			publishMessageForm.width = 230;
+			publishMessageForm.x = 60;
 			publishMessageForm.y = 280;
 			addChild(publishMessageForm);
 			var closePublishMessageLabel:TextField = new TextField;
 			closePublishMessageLabel.text = '}';
-			closePublishMessageLabel.x = 750;
+			closePublishMessageLabel.x = 290;
 			closePublishMessageLabel.y = 280;
 			addChild(closePublishMessageLabel);
 			_publishButton = new CoreButton("Publish", function():void {
@@ -166,7 +165,7 @@ package {
 				_faye.publish(publishChFrom.text, {message: publishMessageForm.text});
 				appendText('->published: ' + "{message: " + publishMessageForm.text + "}");
 			});
-			_publishButton.x = 300;
+			_publishButton.x = 20;
 			_publishButton.y = 250;
 			addChild(_publishButton);
 
@@ -174,7 +173,7 @@ package {
 			_clearButton = new CoreButton("Clear log", function():void {
 				clearMsgField();
 			});
-			_clearButton.x = 300;
+			_clearButton.x = 5;
 			_clearButton.y = 350;
 			addChild(_clearButton);
 		}

@@ -7,7 +7,8 @@ package ui {
 			this.type = TextFieldType.INPUT;
 			this.background = true;
 			this.backgroundColor = 0xFFFFFF;
-			this.width = 300;
+			this.border = true;
+			this.width = 150;
 			this.height = 15;
 
 		}
