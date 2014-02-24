@@ -1,8 +1,9 @@
 package {
-	import net.faye.FayeClient;
-
 	import flash.display.Sprite;
 	import flash.text.TextField;
+
+	import net.faye.FayeClient;
+	import net.hires.debug.Stats;
 
 	import ui.CoreButton;
 	import ui.TextInputForm;
@@ -12,17 +13,24 @@ package {
 	public class AsFayeClient extends Sprite {
 
 
+		private var _stats:Stats;
 		private var _connectButton:CoreButton;
 		private var _disconnectButton:CoreButton;
 		private var _subscribeButton:CoreButton;
 		private var _unsubscribeButton:CoreButton;
 		private var _publishButton:CoreButton;
+		private var _clearButton:CoreButton;
 		private var _messageField:TextField;
 
 
 		private var _faye:FayeClient;
 
 		public function AsFayeClient() {
+			_stats = new Stats();
+			_stats.x = 650;
+			_stats.y = 330;
+			addChild(_stats);
+
 			_messageField = new TextField;
 			_messageField.border = true;
 			_messageField.background = true;
@@ -49,7 +57,9 @@ package {
 
 			_connectButton = new CoreButton("Connect", function():void {
 				_faye = new FayeClient(hostForm.text);
-				_faye.connect();
+				_faye.connect(function():void {
+					appendText('->ConnectButton : Connected');
+				});
 			});
 			_connectButton.x = 300;
 			_connectButton.y = 50;
@@ -58,9 +68,10 @@ package {
 
 			_disconnectButton = new CoreButton("Disconnect", function():void {
 				if (!_faye) {
-					appendText('DisconnectButton -> faye is not initialized!');
+					appendText('->DisconnectButton : faye is not initialized!');
 				} else {
 					_faye.disconnect();
+					appendText('->DisconnectButton : Disconnected.');
 				}
 			});
 			_disconnectButton.x = 300;
@@ -80,13 +91,21 @@ package {
 			chForm.y = 150;
 			addChild(chForm);
 
+			var logCounter:int = 0;
 			_subscribeButton = new CoreButton("Subscribe", function():void {
 				if (!_faye) {
 					_faye = new FayeClient(hostForm.text);
 				}
 				_faye.subscribe(chForm.text, false, function(message:Object):void {
-					appendText(JSON.stringify(message));
+					var log:String = "recived msg from " + chForm.text + " : " + JSON.stringify(message);
+					appendText(log);
+					logCounter += 1;
+					if (logCounter > 100) {
+						clearMsgField();
+						logCounter = 0;
+					}
 				});
+				appendText('->SubscribeButton Subcribed: ' + chForm.text);
 			});
 			_subscribeButton.x = 300;
 			_subscribeButton.y = 150;
@@ -104,9 +123,11 @@ package {
 			addChild(unSubChForm);
 			_unsubscribeButton = new CoreButton("Unsubscribe", function():void {
 				if (!_faye) {
-					appendText('UnSubscribeButton -> faye is not initialized!');
+					appendText('->UnsubscribeButton : faye is not initialized!');
 				}
-				_faye.unsubscribe(unSubChForm.text);
+				_faye.unsubscribe(unSubChForm.text, function():void {
+					appendText('->UnsubscribeButton : unsubscribed.');
+				});
 			});
 			_unsubscribeButton.x = 300;
 			_unsubscribeButton.y = 200;
@@ -138,16 +159,24 @@ package {
 			closePublishMessageLabel.x = 750;
 			closePublishMessageLabel.y = 280;
 			addChild(closePublishMessageLabel);
-			//
 			_publishButton = new CoreButton("Publish", function():void {
 				if (!_faye) {
 					_faye = new FayeClient(hostForm.text);
 				}
 				_faye.publish(publishChFrom.text, {message: publishMessageForm.text});
+				appendText('->published: ' + "{message: " + publishMessageForm.text + "}");
 			});
 			_publishButton.x = 300;
 			_publishButton.y = 250;
 			addChild(_publishButton);
+
+
+			_clearButton = new CoreButton("Clear log", function():void {
+				clearMsgField();
+			});
+			_clearButton.x = 300;
+			_clearButton.y = 350;
+			addChild(_clearButton);
 		}
 
 		private function appendText(text:String, wrap:Boolean=true):void {
@@ -155,7 +184,10 @@ package {
 			if (wrap) {
 				_messageField.text += '\n';
 			}
+		}
 
+		private function clearMsgField():void {
+			_messageField.text = "";
 		}
 	}
 }
