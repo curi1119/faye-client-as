@@ -18,6 +18,15 @@ EM.run {
   client = Faye::Client.new(endpoint)
   client.connect
 
+
+    EM.defer{
+      EM.add_periodic_timer(0.1) {
+        p 'publish'
+        client.publish('/test', {message: 'hi'})
+      }
+    }
+
+
   # subscription = client.subscribe '/chat/*' do |message|
   #   user = message['user']
 
