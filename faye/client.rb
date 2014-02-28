@@ -11,7 +11,7 @@ require 'rubygems'
 require 'bundler/setup'
 require 'faye'
 
-endpoint = "http://localhost:9300/faye"
+endpoint = "http://localhost:6500/faye"
 
 EM.run {
   puts "Connecting to #{endpoint}"
@@ -19,12 +19,12 @@ EM.run {
   client.connect
 
 
-    EM.defer{
-      EM.add_periodic_timer(0.1) {
-        p 'publish'
-        client.publish('/test', {message: 'hi'})
-      }
+  EM.defer{
+    EM.add_periodic_timer(0.1) {
+      p 'publish'
+      client.publish('/test', { message: 'hi' })
     }
+  }
 
 
   # subscription = client.subscribe '/chat/*' do |message|

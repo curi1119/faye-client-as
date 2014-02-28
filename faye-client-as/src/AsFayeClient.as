@@ -50,7 +50,7 @@ package {
 			addChild(hostLabel);
 
 			var hostForm:TextInputForm = new TextInputForm;
-			hostForm.text = 'http://localhost:9300/faye';
+			hostForm.text = 'http://localhost:6500/faye';
 			hostForm.x = 110;
 			hostForm.y = 80;
 			addChild(hostForm);
