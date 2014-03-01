@@ -1,8 +1,10 @@
 package net.faye.transport {
 	import com.adobe.net.URI;
-	import net.faye.FayeClient;
+
 	import net.faye.Envelope;
 	import net.faye.Faye;
+	import net.faye.FayeClient;
+	import net.faye.mixins.Logging;
 
 	public class Transport {
 
@@ -35,8 +37,6 @@ package net.faye.transport {
 
 		}
 
-		// fix envelopes class
-
 		public function encode(envelopes:Vector.<Envelope>):String {
 			return "";
 		}
@@ -45,6 +45,9 @@ package net.faye.transport {
 			_outbox.push(envelope);
 			//flush_large_batch();
 			flush();
+		}
+
+		public function request(envelopes:Vector.<Envelope>):void {
 		}
 
 		public function flush():void {
@@ -56,12 +59,6 @@ package net.faye.transport {
 			_connection_message = null;
 			_outbox.length = 0;
 		}
-
-		public function request(envelopes:Vector.<Envelope>):void {
-
-		}
-
-
 
 		public function flush_large_batch():void {
 
@@ -75,8 +72,7 @@ package net.faye.transport {
 
 			responses = [].concat(responses);
 
-			//debug('Client ? received from ?: ?', client_id, @endpoint, responses)
-			trace('Client', _client.client_id, 'received from ', _endpoint.toString(), ':', JSON.stringify(responses));
+			Logging.debug('Client ? received from ?: ?', _client.client_id, _endpoint.toString(), responses);
 
 			for (i = 0; i < responses.length; ++i) {
 				_client.receive_message(responses[i]);
@@ -106,7 +102,6 @@ package net.faye.transport {
 		}
 
 		public static function get(client:FayeClient, allowed:Vector.<String>, disabled:Vector.<String>, callback:Function):void {
-			trace('---Transport.get START----');
 			var endpoint:URI = client.endpoint;
 			Faye.async_each(_transports, function(pair:Array, resume:Function):void {
 				var conn_type:String = pair[0];
@@ -140,14 +135,11 @@ package net.faye.transport {
 					return;
 				}
 
-				trace("before klass.usable");
 				klass.usable(client, conn_endpoint, function(is_usable:Boolean):void {
-					trace('after klass.usable', klass, 'is_usable:', is_usable);
 					if (!is_usable) {
 						resume();
 						return;
 					}
-					//var transport:Transport = new klass(client, conn_endpoint);
 					var transport:Transport = klass.create(client, conn_endpoint);
 					callback(transport);
 				});
@@ -155,11 +147,6 @@ package net.faye.transport {
 			}, function():void {
 				throw new Error('Could not find a usable connection type for ', endpoint.toString());
 			});
-			trace('---Transport.get END----');
 		}
-
-
-
-
 	}
 }

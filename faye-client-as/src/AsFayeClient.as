@@ -3,6 +3,7 @@ package {
 	import flash.text.TextField;
 
 	import net.faye.FayeClient;
+	import net.faye.Faye;
 	import net.hires.debug.Stats;
 
 	import ui.CoreButton;
@@ -30,6 +31,13 @@ package {
 			_stats.x = 0;
 			_stats.y = 0;
 			addChild(_stats);
+
+			/**
+			 * set Logging
+			 */
+			Faye.logger.trace_log = true;
+			Faye.logger.console_log = true;
+			Faye.logger.log_level = Faye.logger.LOG_LEVEL_DEBUG;
 
 			_messageField = new TextField;
 			_messageField.border = true;

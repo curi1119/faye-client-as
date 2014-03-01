@@ -12,7 +12,6 @@ package net.faye.mixins {
 
 		public function callback(a_callback:Function):void {
 			_defer.promise.then(function(value:*):void {
-				trace('---then---', value);
 				a_callback(value);
 			});
 		}

@@ -1,4 +1,5 @@
 package net.faye {
+	import net.faye.mixins.Logging;
 
 	public class Faye {
 		public function Faye() {
@@ -10,11 +11,14 @@ package net.faye {
 		public static const BAYEUX_VERSION:String   = '1.0'
 		public static const JSONP_CALLBACK:String   = 'jsonpcallback';
 
-		// CONNECTION_TYPES = %w[long-polling cross-origin-long-polling callback-polling websocket eventsource in-process]
 		public static const CONNECTION_TYPES:Vector.<String> = new <String>["long-polling", "cross-origin-long-polling", "callback-polling", "websocket", "eventsource", "in-process"];
 
-		// MANDATORY_CONNECTION_TYPES = %w[long-polling callback-polling in-process]
 		public static const MANDATORY_CONNECTION_TYPES:Vector.<String> = new <String>["long-polling", "callback-polling", "in-process"];
+
+		public static function get logger():Class {
+			return Logging;
+		}
+
 
 		public static function async_each(list:Array, iterator:Function, callback:Function):void {
 			var n:int = list.length;
@@ -54,6 +58,7 @@ package net.faye {
 			};
 			resume();
 		}
+
 
 	}
 }

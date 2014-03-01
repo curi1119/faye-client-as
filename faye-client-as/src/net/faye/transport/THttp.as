@@ -7,7 +7,6 @@ package net.faye.transport {
 	import flash.events.IOErrorEvent;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
-	import flash.net.URLRequestHeader;
 	import flash.net.URLRequestMethod;
 
 	public class THttp extends Transport {
@@ -72,8 +71,5 @@ package net.faye.transport {
 		public function handleIOError(e:Event):void {
 			handle_error(_request_envelopes);
 		}
-
-
-
 	}
 }

@@ -1,11 +1,13 @@
 package net.faye {
 	import com.adobe.net.URI;
-	import net.faye.Faye;
-	import net.faye.mixins.Deferrable;
-	import net.faye.transport.Transport;
 
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
+
+	import net.faye.Faye;
+	import net.faye.mixins.Deferrable;
+	import net.faye.mixins.Logging;
+	import net.faye.transport.Transport;
 
 	public class FayeClient {
 
@@ -46,7 +48,6 @@ package net.faye {
 		private var _max_request_size:int;
 		private var _retry:uint;
 
-		//private var _callback:Function;
 		private var _defer:Deferrable;
 
 
@@ -67,8 +68,6 @@ package net.faye {
 			// AS specification
 			_defer = new Deferrable;
 			Transport.init_transports();
-
-
 
 			_options = (a_options == null ? {} : a_options);
 			_endpoint = new URI(a_endpoint);
@@ -113,8 +112,7 @@ package net.faye {
 
 			_state = CONNECTING;
 
-			//info('Initiating handshake with ?', @endpoint)
-			trace('Initiating handshake with ', _endpoint.toString());
+			Logging.info('Initiating handshake with ?', _endpoint.toString());
 			select_transport(Faye.MANDATORY_CONNECTION_TYPES);
 
 			var connection_type:Array = [_transport.connection_type()]; //[_transport.connection_type()];
@@ -134,8 +132,7 @@ package net.faye {
 
 					select_transport(supportedConnTypes);
 					blocker(function():void {
-						// info('Handshake successful: ?', @client_id)
-						trace('Handshake successful:', _client_id);
+						Logging.info('Handshake successful: ?', _client_id);
 
 						for each (var ch:String in _channels.keys()) {
 							subscribe(ch, true);
@@ -146,14 +143,11 @@ package net.faye {
 						}
 					});
 				} else {
-					//info('Handshake unsuccessful')
-					//EventMachine.add_timer(@advice['interval'] / 1000.0) { handshake(&block) }
+					Logging.info('Handshake unsuccessful');
 					_state = UNCONNECTED;
 				}
 			});
-
 		}
-
 
 		public function connect(block:Function=null):void {
 			if (_advice['recconect'] == NONE || _state == DISCONNECTED) {
@@ -172,8 +166,7 @@ package net.faye {
 			if (_state != CONNECTED) {
 				return;
 			}
-			//info('Calling deferred actions for ?', @client_id)
-			trace('Calling deferred actions for', _client_id);
+			Logging.info('Calling deferred actions for ?', _client_id);
 			_defer.set_deferred_status('succeeded');
 			_defer.set_deferred_status('unknown');
 
@@ -181,8 +174,7 @@ package net.faye {
 				return;
 			}
 			_connect_request = true;
-			//info('Initiating connection for ?', @client_id)
-			trace('Initiating connection for', _client_id);
+			Logging.info('Initiating connection for ?', _client_id)
 
 			var messages:Object = {'channel': Channel.CONNECT, 'clientId': _client_id, 'connectionType': _transport.connection_type()};
 			send(messages, function():void {
@@ -202,7 +194,7 @@ package net.faye {
 					_transport.close();
 				}
 			});
-			// info('Clearing channel listeners for ?', @client_id)
+			Logging.info('Clearing channel listeners for ?', _client_id)
 			_channels = new ChannelSet;
 		}
 
@@ -230,8 +222,7 @@ package net.faye {
 							return;
 						}
 					}
-					//info('Subscription acknowledged for ? to ?', @client_id, channels)
-					trace('Subscription acknowledged for', _client_id, 'to', channel);
+					Logging.info('Subscription acknowledged for ? to ?', _client_id, channel)
 					subscription.set_deferred_status('succeeded');
 				});
 			});
@@ -245,16 +236,13 @@ package net.faye {
 				return;
 			}
 			connect(function():void {
-				//info('Client ? attempting to unsubscribe from ?', @client_id, channel)
-				trace('Client', _client_id, 'attempting to unsubscribe from', channel);
+				Logging.info('Client ? attempting to unsubscribe from ?', _client_id, channel)
 				var message:Object = {'channel': Channel.UNSUBSCRIBE, 'clientId': _client_id, 'subscription': channel};
 				send(message, function(response:Object):void {
 					if (!response['successful']) {
 						return;
 					}
-					//info('Unsubscription acknowledged for ? from ?', @client_id, channels)
-					var l_channel:String = response['channel'];
-					trace('Unsubscription acknowledged for', _client_id, 'from', l_channel);
+					Logging.info('Unsubscription acknowledged for ? from ?', _client_id, response['channel'])
 				});
 			});
 		}
@@ -262,8 +250,7 @@ package net.faye {
 		public function publish(channel:String, data:Object):void {
 
 			connect(function():void {
-				//info('Client ? queueing published message to ?: ?', @client_id, channel, data)
-				trace('Client', _client_id, 'queueing published message to', channel, ':', data);
+				Logging.info('Client ? queueing published message to ?: ?', _client_id, channel, data)
 				var messages:Object = {'channel': channel, 'data': data, 'clientId': _client_id};
 				send(messages, function(response:Object):void {
 				/*
@@ -279,9 +266,7 @@ package net.faye {
 		}
 
 		public function receive_message(message:Object):void {
-			trace('Client receive_message');
 			var id:int = message['id'];
-
 
 			var callback:Function;
 			if (message.hasOwnProperty('successful') && message['successful']) {
@@ -320,43 +305,29 @@ package net.faye {
 			var timer:Timer = new Timer(interval_msec, 0);
 			timer.addEventListener(TimerEvent.TIMER, function():void {
 				if (!_blocker) {
-					trace('blokcer removed');
 					timer.stop();
 					timer.removeEventListener(TimerEvent.TIMER, arguments.callee);
 					timer = null;
 					after();
-				} else {
-					trace('blocking');
 				}
 			});
-			/*
-			timer.addEventListener(TimerEvent.TIMER_COMPLETE, function():void {
-			});
-			*/
 			timer.start();
 		}
 
 		private function select_transport(transport_types:Vector.<String>):void {
-			trace('-START--select_transport');
 			Transport.get(this, transport_types, new Vector.<String>, function(transport:Transport):void {
-				trace('Selected', transport.connection_type(), 'transport for', transport.endpoint.toString());
-				//debug('Selected ? transport for ?', transport.connection_type, transport.endpoint)
+				Logging.debug('Selected ? transport for ?', transport.connection_type(), transport.endpoint.toString());
 
-				trace(transport);
 				if (transport == _transport) {
 					return;
 				}
 				if (transport) {
 					transport.close();
 				}
-				trace('_transport = transport;');
 				_transport = transport;
 				_blocker = false;
 			});
-			trace('-END--select_transport');
-			trace('          ');
 		}
-
 
 		private var _response_callbacks:Object = {};
 
@@ -369,9 +340,7 @@ package net.faye {
 			if (callback != null) {
 				_response_callbacks[message['id']] = callback;
 			}
-			trace('*send:', JSON.stringify(message));
 			transport_send(message);
-
 		/*
 		pipe_through_extensions(:outgoing, message, nil) do |message|
 			next unless message
@@ -417,22 +386,17 @@ package net.faye {
 			if (!message.hasOwnProperty('channel') || !message.hasOwnProperty('data')) {
 				return;
 			}
-			trace('Client', _client_id, 'calling listeners for', message['channel'], 'with', message['data']);
-			//info('Client ? calling listeners for ? with ?', @client_id, message['channel'], message['data'])
+			Logging.info('Client ? calling listeners for ? with ?', _client_id, message['channel'], message['data'])
 			_channels.distribute_message(message)
 		}
 
 		private function cycle_connection():void {
-			trace('cycle_connection');
-
 			if (_connect_request) {
 				_connect_request = false;
-				//info('Closed connection for ?', @client_id)
-				trace('Closed connection for ', _client_id);
+				Logging.info('Closed connection for ?', _client_id)
 			}
 			var timer:Timer = new Timer(_advice['interval'] / 1000.0, 1);
 			timer.addEventListener(TimerEvent.TIMER_COMPLETE, function():void {
-				trace('!fire cycle_connection ');
 				timer.removeEventListener(TimerEvent.TIMER_COMPLETE, arguments.callee);
 				connect();
 			});
