@@ -84,14 +84,12 @@ package net.faye.transport {
 			connect();
 		}
 
-
 		private var _state:int = -1;
 		private var _socket:WebSocket;
 		private var _ever_connected:Boolean;
 		private var _tmp_socket:WebSocket;
 
 		public function connect():void {
-			trace('wetsocket#connect');
 			if (_state == -1) {
 				_state = UNCONNECTED;
 			}
@@ -179,15 +177,13 @@ package net.faye.transport {
 			_defer.set_deferred_status('unknown');
 
 			if (wasConnected) {
-				trace('wasConnected');
-
+				handle_error(_pending_envelopes, true);
 			} else if (_ever_connected) {
-				trace('ever_connected');
+				handle_error(_pending_envelopes);
 			} else {
 				_defer.set_deferred_status('failed');
 			}
 		}
-
 
 		public override function close():void {
 			_socket.close();
