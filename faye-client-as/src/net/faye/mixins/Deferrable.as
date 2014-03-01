@@ -6,6 +6,10 @@ package net.faye.mixins {
 
 		private var _defer:Deferred;
 
+		public static const FAILED:int = 0;
+		public static const SUCCEEDED:int = 1;
+		public static const UNKNOWN:int = 5;
+
 		public function Deferrable() {
 			_defer = new Deferred;
 		}
@@ -26,10 +30,10 @@ package net.faye.mixins {
 			Promise.timeout(null, seconds * 1000);
 		}
 
-		public function set_deferred_status(status:String, value:*=null):void {
-			if (status == 'succeeded') {
+		public function set_deferred_status(status:int, value:*=null):void {
+			if (status == SUCCEEDED) {
 				_defer.resolve(value);
-			} else if (status == 'failed') {
+			} else if (status == FAILED) {
 				_defer.reject(value);
 			} else {
 				_defer = new Deferred;

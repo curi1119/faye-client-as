@@ -122,7 +122,7 @@ package net.faye.transport {
 			_state = CONNECTED;
 			_ever_connected = true;
 			ping();
-			_defer.set_deferred_status('succeeded', _socket);
+			_defer.set_deferred_status(Deferrable.SUCCEEDED, _socket);
 		}
 
 		private function handleOnMessage(event:WebSocketEvent):void {
@@ -174,14 +174,14 @@ package net.faye.transport {
 			_socket = null;
 			_state = UNCONNECTED;
 			_timeouts.remove_timeout('ping');
-			_defer.set_deferred_status('unknown');
+			_defer.set_deferred_status(Deferrable.UNKNOWN);
 
 			if (wasConnected) {
 				handle_error(_pending_envelopes, true);
 			} else if (_ever_connected) {
 				handle_error(_pending_envelopes);
 			} else {
-				_defer.set_deferred_status('failed');
+				_defer.set_deferred_status(Deferrable.FAILED);
 			}
 		}
 

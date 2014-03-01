@@ -167,8 +167,8 @@ package net.faye {
 				return;
 			}
 			Logging.info('Calling deferred actions for ?', _client_id);
-			_defer.set_deferred_status('succeeded');
-			_defer.set_deferred_status('unknown');
+			_defer.set_deferred_status(Deferrable.SUCCEEDED);
+			_defer.set_deferred_status(Deferrable.UNKNOWN);
 
 			if (_connect_request) {
 				return;
@@ -204,7 +204,7 @@ package net.faye {
 
 			if (has_subscribe && !force) {
 				_channels.subscribe(channel, block);
-				subscription.set_deferred_status('succeeded');
+				subscription.set_deferred_status(Deferrable.SUCCEEDED);
 				return subscription;
 			}
 
@@ -217,13 +217,13 @@ package net.faye {
 
 				send(message, function(response:Object):void {
 					if (!response['successful']) {
-						subscription.set_deferred_status('failed', response['error']);
+						subscription.set_deferred_status(Deferrable.FAILED, response['error']);
 						if (_channels.unsubscribe(channel, block)) {
 							return;
 						}
 					}
 					Logging.info('Subscription acknowledged for ? to ?', _client_id, channel)
-					subscription.set_deferred_status('succeeded');
+					subscription.set_deferred_status(Deferrable.SUCCEEDED);
 				});
 			});
 			return subscription;

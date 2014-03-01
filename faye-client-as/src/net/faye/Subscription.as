@@ -29,7 +29,7 @@ package net.faye {
 			cancel();
 		}
 
-		public function set_deferred_status(status:String, value:*=null):void {
+		public function set_deferred_status(status:int, value:*=null):void {
 			_defer.set_deferred_status(status, value);
 		}
 	}
