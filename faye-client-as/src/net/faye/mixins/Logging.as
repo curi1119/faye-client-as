@@ -49,10 +49,14 @@ package net.faye.mixins {
 			var replace_msg:String;
 			for (var i:int = 0; i < message_args.length; ++i) {
 				replace_msg = message_args[i];
-				if ("Object" == flash.utils.getQualifiedClassName(message_args[i])) {
-					replace_msg = JSON.stringify(message_args[i]);
-				} else {
-					replace_msg = message_args[i];
+				var className:String = flash.utils.getQualifiedClassName(message_args[i]);
+				switch (className) {
+					case "Object", "Array":
+						replace_msg = JSON.stringify(message_args[i]);
+						break;
+					default:
+						replace_msg = message_args[i];
+						break;
 				}
 				message = message.replace('?', replace_msg);
 			}
