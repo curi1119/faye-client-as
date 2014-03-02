@@ -50,6 +50,7 @@ package net.faye {
 
 		private var _defer:Deferrable;
 
+
 		public function get client_id():String {
 			return _client_id;
 		}
@@ -64,6 +65,10 @@ package net.faye {
 
 		public function get transports():Object {
 			return _transports;
+		}
+
+		public function set transports(value:Object):void {
+			_transports = value;
 		}
 
 		public function get timeout():Number {
@@ -84,7 +89,7 @@ package net.faye {
 			} else {
 				_endpoints = {};
 			}
-			_transports = {'websocket': {}};
+			_transports = {};
 			_headers = {};
 			_disabled = new Vector.<String>;
 			if (_options.hasOwnProperty('retry') && _options['retry']) {

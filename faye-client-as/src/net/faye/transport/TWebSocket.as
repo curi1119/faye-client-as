@@ -36,11 +36,9 @@ package net.faye.transport {
 		}
 
 		public static function create(client:FayeClient, endpoint:URI):TWebSocket {
-			var sockets:Object = client.transports['websocket'];
-
+			var sockets:Object = client.transports.websocket = client.transports.websocket || {};
 			sockets[endpoint.toString()] = sockets[endpoint.toString()] || new TWebSocket(client, endpoint);
 			return sockets[endpoint.toString()];
-
 		}
 
 		public override function batching():Boolean {
@@ -113,12 +111,6 @@ package net.faye.transport {
 		}
 
 		private function handleOnOpen(event:WebSocketEvent):void {
-			trace('handle websocket open');
-			/*
-			if (socket.headers){
-				self._storeCookies(socket.headers['set-cookie']);
-			}
-			*/
 			_state = CONNECTED;
 			_ever_connected = true;
 			ping();
@@ -126,7 +118,6 @@ package net.faye.transport {
 		}
 
 		private function handleOnMessage(event:WebSocketEvent):void {
-			trace('handle websocket handleMessage:', event.message.utf8Data);
 			var o_messages:Object = JSON.parse(event.message.utf8Data);
 
 			var messages:Array = [].concat(o_messages as Array);
@@ -147,17 +138,14 @@ package net.faye.transport {
 		}
 
 		private function handleOnClose(event:WebSocketEvent):void {
-			trace('handle websocket onClose');
 			errorHandler();
 		}
 
 		private function handleOnError(event:WebSocketErrorEvent):void {
-			trace('handle websocket onError');
 			errorHandler();
 		}
 
 		private function errorHandler():void {
-			trace('handle websocket closed');
 			var closed:Boolean = false;
 			if (closed) {
 				return;
