@@ -3,7 +3,6 @@ package net.faye {
 
 	public class Envelope {
 
-
 		private var _id:int;
 		private var _message:Object;
 
@@ -14,7 +13,6 @@ package net.faye {
 		}
 
 		public function get message():Object {
-			_defer = new Deferrable;
 			return _message;
 		}
 
@@ -22,11 +20,13 @@ package net.faye {
 			return _id;
 		}
 
-		public function Envelope(message:Object, timeout:uint=0) {
+		public function Envelope(message:Object, timeout:Number) {
+			_defer = new Deferrable;
+			trace(JSON.stringify(message));
 			_id = message['id'];
 			_message = message;
-			//self.timeout(timeout, false) if timeout
-		}
 
+			_defer.timeout(timeout, false);
+		}
 	}
 }

@@ -34,22 +34,21 @@ package net.faye {
 		private var _message_id:int;
 		private var _connect_request:Boolean = false;
 
-		private var _disabled:Vector.<String>; // not using
+		private var _disabled:Vector.<String>;
 
 		private var _channels:ChannelSet;
 		private var _transport:Transport;
 		private var _transport_up:Boolean;
-		public var transports:Object;
+		private var _transports:Object;
 
 		private var _cookies:Object;
 		private var _endpoint:URI;
-		private var _endpoints:String;
+		private var _endpoints:Object;
 		private var _headers:Object;
 		private var _max_request_size:int;
 		private var _retry:uint;
 
 		private var _defer:Deferrable;
-
 
 		public function get client_id():String {
 			return _client_id;
@@ -63,19 +62,40 @@ package net.faye {
 			return _headers;
 		}
 
+		public function get transports():Object {
+			return _transports;
+		}
+
+		public function get timeout():Number {
+			return _advice['timeout'];
+		}
 
 		public function FayeClient(a_endpoint:String, a_options:Object=null) {
 			// AS specification
 			_defer = new Deferrable;
 			Transport.init_transports();
 
+			Logging.info('New client created for ?', a_endpoint)
+
 			_options = (a_options == null ? {} : a_options);
 			_endpoint = new URI(a_endpoint);
-
-			transports = {'websocket': {}};
+			if (_options.hasOwnProperty('endpoints') && _options['endpoints']) {
+				_endpoints = _options['endpoints'];
+			} else {
+				_endpoints = {};
+			}
+			_transports = {'websocket': {}};
 			_headers = {};
 			_disabled = new Vector.<String>;
-			_retry = DEFAULT_RETRY;
+			if (_options.hasOwnProperty('retry') && _options['retry']) {
+				_retry = _options['retry'];
+			} else {
+				_retry = DEFAULT_RETRY;
+			}
+
+			for (var key:String in _endpoints) {
+				_endpoints[key] = new URI(_endpoints[key]);
+			}
 
 			_max_request_size = MAX_REQUEST_SIZE;
 
@@ -98,8 +118,12 @@ package net.faye {
 			_advice = {'reconnect': RETRY, 'interval': interval, 'timeout': timeout};
 		}
 
-		public function get timeout():Number {
-			return _advice['timeout'];
+		public function disable(feature):void {
+			_disabled.push(feature);
+		}
+
+		public function set_header(name:String, value:String):void {
+			_headers[name] = value;
 		}
 
 		public function handshake(block:Function):void {
@@ -115,7 +139,7 @@ package net.faye {
 			Logging.info('Initiating handshake with ?', _endpoint.toString());
 			select_transport(Faye.MANDATORY_CONNECTION_TYPES);
 
-			var connection_type:Array = [_transport.connection_type()]; //[_transport.connection_type()];
+			var connection_type:Array = [_transport.connection_type()];
 			var message:Object = {'channel': Channel.HANDSHAKE, 'version': Faye.BAYEUX_VERSION, 'supportedConnectionTypes': connection_type};
 
 			send(message, function(response:Object):void {
@@ -128,7 +152,6 @@ package net.faye {
 					for (var i:int = 0; i < l_supportedConnectionTypes.length; ++i) {
 						supportedConnTypes.push(l_supportedConnectionTypes[i]);
 					}
-
 
 					select_transport(supportedConnTypes);
 					blocker(function():void {
@@ -148,6 +171,7 @@ package net.faye {
 				}
 			});
 		}
+
 
 		public function connect(block:Function=null):void {
 			if (_advice['recconect'] == NONE || _state == DISCONNECTED) {
@@ -247,22 +271,20 @@ package net.faye {
 			});
 		}
 
-		public function publish(channel:String, data:Object):void {
-
+		public function publish(channel:String, data:Object):Publication {
+			var publication:Publication = new Publication;
 			connect(function():void {
 				Logging.info('Client ? queueing published message to ?: ?', _client_id, channel, data)
 				var messages:Object = {'channel': channel, 'data': data, 'clientId': _client_id};
 				send(messages, function(response:Object):void {
-				/*
-				if (response.successful)
-					publication.setDeferredStatus('succeeded');
-				else
-					publication.setDeferredStatus('failed', Faye.Error.parse(response.error));
-				*/
-
+					if (response['successful']) {
+						publication.set_deferred_status(Deferrable.SUCCEEDED);
+					} else {
+						publication.set_deferred_status(Deferrable.FAILED, response['error']);
+					}
 				});
 			});
-
+			return publication;
 		}
 
 		public function receive_message(message:Object):void {
@@ -273,15 +295,6 @@ package net.faye {
 				callback = _response_callbacks[id];
 				delete _response_callbacks[id];
 			}
-			/*
-			pipe_through_extensions(:incoming, message, nil) do |message|
-				next unless message
-				handle_advice(message['advice']) if message['advice']
-				deliver_message(message)
-
-				callback.call(message) if callback
-			end
-			*/
 			if (message['advice']) {
 				handle_advice(message['advice'])
 			}
@@ -294,9 +307,24 @@ package net.faye {
 		}
 
 		public function message_error(messages:Array, immedidate:Boolean=false):void {
+			var id:int;
+			for (var i:int = 0; i < messages.length; ++i) {
+				id = messages[i]['id'];
 
+				if (immedidate) {
+					transport_send(messages[i]);
+				} else {
+					Faye.addOneShotTimer(_retry, function():void {
+						transport_send(messages[i]);
+					});
+				}
+			}
+			if (immedidate || _transport_up == false) {
+				return;
+			}
+			_transport_up == false;
+			//trigger('transport:down');
 		}
-
 
 		private var _blocker:Boolean;
 
@@ -341,23 +369,25 @@ package net.faye {
 				_response_callbacks[message['id']] = callback;
 			}
 			transport_send(message);
-		/*
-		pipe_through_extensions(:outgoing, message, nil) do |message|
-			next unless message
-			@response_callbacks[message['id']] = callback if callback
-			transport_send(message)
-		end
-		*/
 		}
 
 		private function transport_send(message:Object):void {
 			if (_transport == null) {
 				return;
 			}
-			var timeout:uint = 1.2 * _retry;
+
+			var timeout:Number;
+			if (_advice['timeout'] == null || _advice['timeout'] == 0) {
+				timeout = 1.2 * _retry;
+			} else {
+				timeout = 1.2 * _advice['timeout'] / 1000.0;
+			}
 
 			var envelope:Envelope = new Envelope(message, timeout);
 
+			envelope.defer.errback(function(immedidate):void {
+				message_error([message], immedidate);
+			});
 			_transport.send(envelope);
 		}
 
@@ -367,19 +397,20 @@ package net.faye {
 				_message_id = 0;
 			}
 			return _message_id.toString(36);
-
 		}
 
 		private function handle_advice(advice):void {
-		/*
-		@advice.update(advice)
+			for (var key:String in advice) {
+				if (_advice[key] != advice[key]) {
+					_advice[key] = advice[key];
+				}
+			}
 
-		if @advice['reconnect'] == HANDSHAKE and @state != DISCONNECTED
-			@state = UNCONNECTED
-			@client_id = nil
-			cycle_connection
-		end
-		*/
+			if (_advice['reconnect'] == HANDSHAKE && _state != DISCONNECTED) {
+				_state = UNCONNECTED
+				_client_id = null;
+				cycle_connection();
+			}
 		}
 
 		private function deliver_message(message:Object):void {
@@ -395,12 +426,7 @@ package net.faye {
 				_connect_request = false;
 				Logging.info('Closed connection for ?', _client_id)
 			}
-			var timer:Timer = new Timer(_advice['interval'] / 1000.0, 1);
-			timer.addEventListener(TimerEvent.TIMER_COMPLETE, function():void {
-				timer.removeEventListener(TimerEvent.TIMER_COMPLETE, arguments.callee);
-				connect();
-			});
-			timer.start();
+			Faye.addOneShotTimer(_advice['interval'] / 1000.0, connect);
 		}
 
 	}

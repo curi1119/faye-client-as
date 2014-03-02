@@ -32,9 +32,12 @@ package {
 			_stats.y = 0;
 			addChild(_stats);
 
+
+
 			/**
 			 * set Logging
 			 */
+			Faye.logger.enable = true;
 			Faye.logger.trace_log = true;
 			Faye.logger.console_log = true;
 			Faye.logger.log_level = Faye.logger.LOG_LEVEL_DEBUG;
@@ -64,6 +67,7 @@ package {
 			addChild(hostForm);
 
 			_connectButton = new CoreButton("Connect", function():void {
+				_faye = new FayeClient(hostForm.text, {endpoints: {websocket: 'http://ws.example.com/'}});
 				_faye = new FayeClient(hostForm.text);
 				_faye.connect(function():void {
 					appendText('->ConnectButton : Connected');

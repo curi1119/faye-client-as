@@ -20,7 +20,7 @@ EM.run {
 
 
   EM.defer{
-    EM.add_periodic_timer(0.1) {
+    EM.add_periodic_timer(3) {
       p 'publish'
       client.publish('/test', { message: 'hi' })
     }

@@ -1,4 +1,7 @@
 package net.faye {
+	import flash.events.TimerEvent;
+	import flash.utils.Timer;
+
 	import net.faye.mixins.Logging;
 
 	public class Faye {
@@ -17,6 +20,18 @@ package net.faye {
 
 		public static function get logger():Class {
 			return Logging;
+		}
+
+
+		public static function addOneShotTimer(deply_sec:Number, callback:Function):void {
+			var timer:Timer = new Timer(deply_sec * 1000.0, 1);
+			timer.addEventListener(TimerEvent.TIMER_COMPLETE, function():void {
+				timer.removeEventListener(TimerEvent.TIMER_COMPLETE, arguments.callee);
+				timer.stop();
+				timer = null;
+				callback();
+			});
+			timer.start();
 		}
 
 

@@ -26,8 +26,8 @@ package net.faye.mixins {
 			});
 		}
 
-		public function timeout(seconds:uint, message:String):void {
-			Promise.timeout(null, seconds * 1000);
+		public function timeout(seconds:Number, message:*):void {
+			Promise.timeout(message, seconds * 1000.0);
 		}
 
 		public function set_deferred_status(status:int, value:*=null):void {

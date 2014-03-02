@@ -4,6 +4,7 @@ package net.faye.transport {
 	import net.faye.Envelope;
 	import net.faye.Faye;
 	import net.faye.FayeClient;
+	import net.faye.mixins.Deferrable;
 	import net.faye.mixins.Logging;
 
 	public class Transport {
@@ -67,7 +68,7 @@ package net.faye.transport {
 		public function receive(envelopes:Vector.<Envelope>, responses:Array):void {
 			var i:int;
 			for (i = 0; i < envelopes.length; ++i) {
-				envelopes[i].defer.set_deferred_status('succeeded');
+				envelopes[i].defer.set_deferred_status(Deferrable.SUCCEEDED);
 			}
 
 			responses = [].concat(responses);
@@ -81,7 +82,7 @@ package net.faye.transport {
 
 		public function handle_error(envelopes:Vector.<Envelope>, immedidate:Boolean=false):void {
 			for (var i:int = 0; i < envelopes.length; ++i) {
-				envelopes[i].defer.set_deferred_status('failed', immedidate);
+				envelopes[i].defer.set_deferred_status(Deferrable.FAILED, immedidate);
 			}
 		}
 
