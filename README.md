@@ -3,7 +3,7 @@
 
 What's this
 -----------
-This is an AS3 implementation of the Faye Client library.
+This is an AS3 implementation of the [Faye](https://github.com/faye/faye) Client library.
 
 This is NOT Faye team's *official* project. Do NOT ask about this to Faye team.
 
