@@ -23,6 +23,11 @@ Usage Example
     });
     faye.publish('/test', {message: 'hello world'});
 
+Note:
+-------------
+- Some options may not work such as custom headers.
+- Extension is not supported.
+- Cookie is not supported.
 
 About Flash Security Policy file
 -------------
