@@ -17,7 +17,7 @@ Usage Example
 -------------
 
     var faye:FayeClient;
-    faye = Faye.Client('http://localhost:6500/faye', {timeout: 120});
+    faye = FayeClient(('http://localhost:6500/faye', {timeout: 120});
     faye.subscribe('/test', false, function(message:Object):void {
        trace("recived:", JSON.stringify(messages));
     });
