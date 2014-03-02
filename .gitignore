@@ -17,3 +17,5 @@ faye/.bundle
 faye/log/*.log
 faye/tmp/*
 faye/vendor/*
+
+faye-client-as/bin/faye-client-as.swc

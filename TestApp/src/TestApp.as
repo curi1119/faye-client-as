@@ -11,9 +11,7 @@ package {
 
 	[SWF(frameRate = "30", width = "960", height = "540", backgroundColor = "0xFAFAD2")]
 
-	public class AsFayeClient extends Sprite {
-
-
+	public class TestApp extends Sprite {
 		private var _stats:Stats;
 		private var _connectButton:CoreButton;
 		private var _disconnectButton:CoreButton;
@@ -22,16 +20,13 @@ package {
 		private var _publishButton:CoreButton;
 		private var _clearButton:CoreButton;
 		private var _messageField:TextField;
-
-
 		private var _faye:FayeClient;
 
-		public function AsFayeClient() {
+		public function TestApp() {
 			_stats = new Stats();
 			_stats.x = 0;
 			_stats.y = 0;
 			addChild(_stats);
-
 
 
 			/**
@@ -39,7 +34,7 @@ package {
 			 */
 			Faye.logger.enable = true;
 			Faye.logger.trace_log = true;
-			Faye.logger.console_log = true;
+			Faye.logger.console_log = false;
 			Faye.logger.log_level = Faye.logger.LOG_LEVEL_DEBUG;
 
 			_messageField = new TextField;
@@ -200,5 +195,6 @@ package {
 		private function clearMsgField():void {
 			_messageField.text = "";
 		}
+
 	}
 }
